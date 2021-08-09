@@ -37,7 +37,7 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/{:id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Task> findTaskById(@PathVariable("id") long id){
         System.out.println(id);
         Optional<Task> task = taskRepository.findById(id);
@@ -54,4 +54,50 @@ public class TaskController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTask(@PathVariable("id") long id, @RequestBody Task task){
+        try{
+            Optional<Task> foundTask = taskRepository.findById(id);
+            if(foundTask.isPresent()){
+                Task _task = foundTask.get();
+                _task.setTitle(task.getTitle());
+                _task.setDescription(task.getDescription());
+                return new ResponseEntity<>(taskRepository.save(_task), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteTaskById(@PathVariable("id") long id){
+        try{
+            taskRepository.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/")
+    public ResponseEntity<HttpStatus> deleteAllTasks(){
+        try{
+            taskRepository.deleteAll();
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{title}")
+    public ResponseEntity<Task> findTaskByTitle(@PathVariable("title") String title){
+        try{
+            Optional<Task> task = taskRepository.findByTitle(title);
+            return task.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
+
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
