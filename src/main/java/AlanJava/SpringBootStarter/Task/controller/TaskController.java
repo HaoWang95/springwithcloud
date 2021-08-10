@@ -1,8 +1,11 @@
 package AlanJava.SpringBootStarter.Task.controller;
 
+import AlanJava.SpringBootStarter.Task.component.TaskModelAssembler;
 import AlanJava.SpringBootStarter.Task.model.Task;
 import AlanJava.SpringBootStarter.Task.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,16 +15,15 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/v1/api/task")
 public class TaskController {
 
     @Autowired
     TaskRepository taskRepository;
 
-    @GetMapping("")
-    public String TaskTest(){
-        return "This is the index test for task controller";
-    }
+    @Autowired
+    TaskModelAssembler assembler;
+
 
     @GetMapping("/")
     public ResponseEntity<List<Task>> findAllTasks(){
@@ -37,18 +39,27 @@ public class TaskController {
         }
     }
 
+    // This is a path variable, not request param
     @GetMapping("/{id}")
-    public ResponseEntity<Task> findTaskById(@PathVariable("id") long id){
-        System.out.println(id);
+    public ResponseEntity<?> findTaskById(@PathVariable("id") long id){
         Optional<Task> task = taskRepository.findById(id);
-        return task.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+        if (task.isPresent()){
+            EntityModel<Task> taskModel = assembler.toModel(task.get());
+            return ResponseEntity.created(taskModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(taskModel);
+        }
+        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+//        return task
+//                .map(taskInstance -> new ResponseEntity<>(taskInstance, HttpStatus.OK))
+//                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/")
-    public ResponseEntity<Task> createTask(@RequestBody Task task){
+    public ResponseEntity<?> createTask(@RequestBody Task task){
         try{
-            Task _task = taskRepository.save(new Task(task.getTitle(),task.getDescription()));
-            return new ResponseEntity<>(_task, HttpStatus.CREATED);
+            EntityModel<Task> taskModel = assembler.toModel(
+                    taskRepository.save(new Task(task.getTitle(), task.getDescription())));
+            return ResponseEntity.created(taskModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(taskModel);
         }catch (Exception e){
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -90,11 +101,12 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/{title}")
+    @GetMapping("")
     public ResponseEntity<Task> findTaskByTitle(@PathVariable("title") String title){
         try{
             Optional<Task> task = taskRepository.findByTitle(title);
-            return task.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
+            return task.map(
+                    value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
 
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
