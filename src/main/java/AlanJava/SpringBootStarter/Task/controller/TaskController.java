@@ -4,12 +4,12 @@ import AlanJava.SpringBootStarter.Task.component.TaskModelAssembler;
 import AlanJava.SpringBootStarter.Task.model.Task;
 import AlanJava.SpringBootStarter.Task.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,17 +25,19 @@ public class TaskController {
     TaskModelAssembler assembler;
 
 
-    @GetMapping("/")
-    public ResponseEntity<List<Task>> findAllTasks(){
+    @GetMapping(value = "/")
+    public CollectionModel<EntityModel<Task>> findAllTasks(){
         try{
             List<Task> taskList = new ArrayList<Task>(taskRepository.findAll());
 
             if (taskList.isEmpty()){
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return CollectionModel.empty();
             }
-            return new ResponseEntity<>(taskList, HttpStatus.OK);
+            //return new ResponseEntity<>(taskList, HttpStatus.OK);
+            return assembler.toCollectionModel(taskList);
         }catch (Exception e){
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            //return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return  CollectionModel.empty();
         }
     }
 
@@ -112,6 +114,19 @@ public class TaskController {
 
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/completed/{completed}")
+    public CollectionModel<EntityModel<Task>> findTaskByCompleted(@PathVariable("completed") boolean completed){
+        try{
+            List<Task> tasksCompleted = taskRepository.findByCompleted(completed);
+            if (!tasksCompleted.isEmpty()){
+                return assembler.toCollectionModel(tasksCompleted);
+            }
+            return CollectionModel.empty();
+        }catch (Exception e){
+            return CollectionModel.empty();
         }
     }
 }
