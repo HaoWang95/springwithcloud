@@ -41,7 +41,7 @@ public class TaskController {
 
     // This is a path variable, not request param
     @GetMapping("/{id}")
-    public ResponseEntity<?> findTaskById(@PathVariable("id") long id){
+    public ResponseEntity<EntityModel<Task>> findTaskById(@PathVariable("id") long id){
         Optional<Task> task = taskRepository.findById(id);
 
         if (task.isPresent()){
@@ -66,14 +66,16 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable("id") long id, @RequestBody Task task){
+    public ResponseEntity<EntityModel<Task>> updateTask(@PathVariable("id") long id, @RequestBody Task task){
         try{
             Optional<Task> foundTask = taskRepository.findById(id);
             if(foundTask.isPresent()){
                 Task _task = foundTask.get();
                 _task.setTitle(task.getTitle());
                 _task.setDescription(task.getDescription());
-                return new ResponseEntity<>(taskRepository.save(_task), HttpStatus.OK);
+                _task.setCompleted(task.getCompleted());
+                EntityModel<Task> savedTaskModel = assembler.toModel(taskRepository.save(_task));
+                return ResponseEntity.created(savedTaskModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(savedTaskModel);
             }
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }catch (Exception e){

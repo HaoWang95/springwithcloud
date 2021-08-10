@@ -16,6 +16,9 @@ public class Task {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "completed")
+    private Boolean completed;
+
     public Task(){}
 
     public Task(String title){
@@ -25,6 +28,13 @@ public class Task {
     public Task(String title, String description){
         this.title = title;
         this.description = description;
+        this.completed = false;
+    }
+
+    public Task(String title, String description, boolean completed){
+        this.title = title;
+        this.description = description;
+        this.completed = completed;
     }
 
     public Long getId() {
@@ -51,12 +61,21 @@ public class Task {
         this.description = description;
     }
 
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
     @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", completed=" + completed +
                 '}';
     }
 
@@ -65,6 +84,11 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(title, task.title) && Objects.equals(description, task.description);
+        return Objects.equals(id, task.id) && Objects.equals(title, task.title) && Objects.equals(description, task.description) && Objects.equals(completed, task.completed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, completed);
     }
 }

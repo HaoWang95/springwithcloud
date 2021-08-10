@@ -22,12 +22,14 @@ public class LoadTask {
             logger.info("Preloading data -> "
                     + taskRepository.save(
                             new Task("Test spring boot",
-                                    "Upgrade to spring cloud and build microservices"
+                                    "Upgrade to spring cloud and build microservices",
+                                    false
                             )));
             logger.info("Preloading data -> "+ taskRepository.save(
                     new Task("React and ng application",
-                            "Important to use both of the front end tools")
-            ));
+                            "Important to use both of the front end tools",
+                            false
+                    )));
         };
     }
 }
