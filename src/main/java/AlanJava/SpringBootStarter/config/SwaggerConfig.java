@@ -12,10 +12,18 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.function.Predicate;
 
+/**
+ * Basic configuration for swagger
+ * 1. After running the application, go to swagger-resources to check the metadata of the documentation.
+ *    If we can get the name, url, swagger version and location data, it means the swagger is configured successfully.
+ * 2. Lots of tutorials claim that swagger path is server:port/context-path/swagger-ui.html, based on my experience of this afternoon
+ *    The default is server:port/swagger-ui/index.html
+ * 3. Swagger requires quite lots of extra configuration to adjust the content. Also, it requires the documentation of the api endpoint
+ *    controllers.
+ */
 
 @Configuration
 @EnableSwagger2
-@EnableWebMvc
 public class SwaggerConfig {
     @Bean
     public Docket postsApi(){
