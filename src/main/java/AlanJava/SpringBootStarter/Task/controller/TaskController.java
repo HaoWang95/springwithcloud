@@ -51,9 +51,6 @@ public class TaskController {
             return ResponseEntity.created(taskModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(taskModel);
         }
         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-//        return task
-//                .map(taskInstance -> new ResponseEntity<>(taskInstance, HttpStatus.OK))
-//                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/")

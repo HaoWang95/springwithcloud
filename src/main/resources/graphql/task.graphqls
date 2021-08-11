@@ -1,0 +1,18 @@
+
+type Task {
+    id: ID!
+    title: String!
+    description: String
+    completed: Boolean
+}
+
+
+type Query {
+    findAllTasks: [Task]
+    countTasks: Int
+}
+
+
+type Mutation {
+    createTask(title: String!, description: String): Task!
+}
